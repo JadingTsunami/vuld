@@ -26,6 +26,7 @@
 #include <stdbool.h>
 
 #include "fileutil.h"
+#include "genutil.h"
 
 int main(int argc, char** argv)
 {

@@ -1,5 +1,5 @@
 /*
- * File and File Selection Utilities
+ * INI File Utilities
  *
  * Copyright (C) 2020  Jading Tsunami
  * 
@@ -18,21 +18,11 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef _FILEUTIL_H
-#define _FILEUTIL_H
+#ifndef _INIUTIL_H
+#define _INIUTIL_H
 
-struct file_list
-{
-    char* name;
-    struct file_list* next;
-};
-
-void add_file( struct file_list* head, char* name );
-void destroy( struct file_list* head );
-int choose_number(char* prompt, int max_tries, int least, int most, bool print_range);
-struct file_list* choose_file( struct file_list* head, char* prompt, int max_files_per_screen );
-int run_command(char* cmd);
-int find_files( char* fdir, char* fextension, struct file_list* fhead );
-void clear_screen();
+bool find_in_file(FILE* f, char* target, bool exact, int max_lines);
+bool is_header( char* s );
+bool get_attribute(FILE* f, char* attribute_name, char** attribute_value);
 
 #endif

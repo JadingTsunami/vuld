@@ -184,3 +184,10 @@ void clear_screen()
 {
     system("cls");
 }
+
+
+bool does_file_exist(char* path_to_file)
+{
+    char the_path[MAX_PATH];
+    return (bool)(realpath(path_to_file, the_path));
+}

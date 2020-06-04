@@ -21,6 +21,8 @@
 #ifndef _FILEUTIL_H
 #define _FILEUTIL_H
 
+#include <stdbool.h>
+
 struct file_list
 {
     char* name;
@@ -34,5 +36,6 @@ struct file_list* choose_file( struct file_list* head, char* prompt, int max_fil
 int run_command(char* cmd);
 int find_files( char* fdir, char* fextension, struct file_list* fhead );
 void clear_screen();
+bool does_file_exist(char* path_to_file);
 
 #endif

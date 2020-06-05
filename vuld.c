@@ -20,6 +20,7 @@
 
 #include <stdio.h>
 #include <dirent.h>
+#include <string.h>
 #include <sys/stat.h>
 
 #include "fileutil.h"
@@ -49,11 +50,23 @@
  */
 int main(int argc, char** argv)
 {
+    /* DOS files are 8.3 plus null terminator */
+    char deh_prog[8 + 1 + 3 + 1];
+    char deusf_prog[8 + 1 + 3 + 1];
+
     /* we need at least dehacked and deusf or deutex */
-    if ( !does_file_exist("dehacked.exe") ) {
+    if ( does_file_exist("dehacked.exe") ) {
+        strcpy(deh_prog,"dehacked.exe");
+    } else {
         fprintf(stderr, "Error: No DEHACKED.EXE found.\n");
         return RET_ERROR;
-    } else if (!(does_file_exist("deusf.exe")||does_file_exist("deutex.exe")) ) {
+    }
+
+    if (does_file_exist("deusf.exe")) {
+        strcpy(deusf_prog,"deusf.exe");
+    } else if (does_file_exist("deutex.exe")) {
+        strcpy(deusf_prog,"deutex.exe");
+    } else {
         fprintf(stderr, "Error: No DEUSF.EXE or DEUTEX.EXE found.\n");
         return RET_ERROR;
     }

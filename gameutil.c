@@ -18,13 +18,9 @@ enum gametype check_for_game(char* directory)
 
     pathloc = strlen(tmpdir)-1;
     
-    if ( pathloc > 0 && pathloc+2 < MAX_PATH && directory[pathloc] != '\\' &&
+    if ( pathloc > 0 && pathloc+2 < MAX_PATH && directory[pathloc] != PATHSEP &&
          (strcmp(tmpdir,".") != 0)) {
-#if (__linux__||__APPLE__)
-        strcat( tmpdir, "/" );
-#else
-        strcat( tmpdir, "\\" );
-#endif
+        strcat( tmpdir, PATHSEP );
         pathloc++;
     }
 
@@ -34,7 +30,7 @@ enum gametype check_for_game(char* directory)
         pathloc++;
 
     /* need enough space left for an 8.3 filename + null terminator */
-    if ( (pathloc + 8 + 3 + 1) >= MAX_PATH )
+    if ( (pathloc + 8 + 1 + 3 + 1) >= MAX_PATH )
         return GAME_NONE;
 
     /* check for doom files */

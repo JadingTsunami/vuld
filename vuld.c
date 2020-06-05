@@ -19,6 +19,7 @@
  */
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <dirent.h>
 #include <string.h>
 #include <sys/stat.h>
@@ -31,9 +32,69 @@
 
 #define RET_ERROR (-1)
 
+struct gamepack {
+    enum gametype game;
+    char* command_args;
+    char* processed_wad;
+    struct file_list* deh_files;
+    struct file_list* wad_files;
+};
+
+void destroy_gamepack( struct gamepack* g, bool delete_strings )
+{
+    if(g) {
+        if(g->deh_files)
+            free(g->deh_files);
+        if(g->wad_files)
+            free(g->wad_files);
+
+        if(delete_strings) {
+            if(g->command_args)
+                free(g->command_args);
+            if(g->processed_wad)
+                free(g->processed_wad);
+        }
+
+        free(g);
+    }
+}
+
+struct gamepack* create_gamepack( enum gametype g, char* args, char* procwad,
+        struct file_list* d, struct file_list* w )
+{
+    struct gamepack* gp = malloc(sizeof(struct gamepack));
+    if(!gp)
+        return NULL;
+
+    gp->game = g;
+    gp->command_args = args;
+    gp->processed_wad = procwad;
+    gp->deh_files = d;
+    gp->wad_files = w;
+
+    return gp;
+}
+
+struct gamepack* convert_dir_to_gamepack( char* dir_to_convert )
+{
+    if(!dir_to_convert)
+        return NULL;
+
+    struct gamepack* gp = create_gamepack(GAME_NONE,NULL,NULL,malloc(sizeof(struct file_list)),malloc(sizeof(struct file_list)));
+    if(!gp || !gp->deh_files || !gp->wad_files)
+        destroy_gamepack(gp,false);
+        return NULL;
+
+    find_files(dir_to_convert,".DEH",gp->deh_files);
+    find_files(dir_to_convert,".WAD",gp->wad_files);
+
+    return gp;
+}
+
+
 /* 2 modes:
  * 1. Launcher mode: Find all dirs with .deh and .wad, give user a choice, merge dehs, deusf/detex the wads and run
- *      - 1st WAD gets appended, rest are merged
+ *      - 1st WAD gets appended, rest are joined
  * 2. INI mode: Select all deh/wad from "packs" specified in an INI file
  *      [pack name]
  *      game = doom|doom2
@@ -50,6 +111,9 @@
  */
 int main(int argc, char** argv)
 {
+    struct file_list* mod_dirs = NULL;
+    struct file_list* chosen_file;
+    struct gamepack* chosen_gamepack;
     /* DOS files are 8.3 plus null terminator */
     char deh_prog[8 + 1 + 3 + 1];
     char deusf_prog[8 + 1 + 3 + 1];
@@ -91,20 +155,21 @@ int main(int argc, char** argv)
 
     closedir(d);
 
-    /* check for doom or doom2 game files */
-    enum gametype game = check_for_game(".");
-
-    if( game == GAME_NONE ) {
-        fprintf(stderr, "Error: Did not find a game in the current directory.\n");
-        fprintf(stderr, "Make sure you run %s from your game directory.\n", argv[0]);
-        return RET_ERROR;
-    }
-
     /* if an INI is specified, use it, else go into launcher mode */
     if ( argc > 1 ) {
         /* INI mode */
         /* TODO: Implement */
     } else {
+
+        /* check for doom or doom2 game files */
+        enum gametype game = check_for_game(".");
+
+        if( game == GAME_NONE ) {
+            fprintf(stderr, "Error: Did not find a game in the current directory.\n");
+            fprintf(stderr, "Make sure you run %s from your game directory.\n", argv[0]);
+            return RET_ERROR;
+        }
+
         /* Launcher mode */
         /* For each directory */
         d = opendir( "." );
@@ -114,6 +179,9 @@ int main(int argc, char** argv)
             return RET_ERROR;
         }
 
+        /* find all the directories that contain
+         * game files
+         */
         struct dirent* dirfile;
         struct stat statbuf;
         char* strfile;
@@ -122,19 +190,36 @@ int main(int argc, char** argv)
             if (stat(strfile, &statbuf) != 0)
                 continue;
             else if S_ISDIR(statbuf.st_mode) {
-                /* Grab all DEH patches */
-                /* Grab all WAD files */
+                /* NOTE: optimization could be to stop after 1 file is found */
+                if( find_files(dirfile->d_name, ".DEH", NULL) > 0 ||
+                        find_files(dirfile->d_name, ".WAD", NULL) > 0 ) {
+                    add_file( mod_dirs, dirfile->d_name );
+                }
             }
 
         }
 
         closedir(d);
 
-
         /* Have the user pick one */
+        chosen_file = choose_file( mod_dirs, "Select a gameplay mod:\n", 5 );
+
+        /* turn it into a game pack */
+        chosen_gamepack = convert_dir_to_gamepack(chosen_file->name);
+
+        if( !chosen_gamepack ) {
+            fprintf(stderr, "Wasn't able to create a game pack.\n");
+            fprintf(stderr, "This is an internal error.\n");
+            return RET_ERROR;
+        }
+
         /* Merge all DEH patches */
+
         /* Merge all WAD files */
 
+
+        if(chosen_gamepack)
+            destroy_gamepack(chosen_gamepack,false);
     }
     /* Launch it */
     return 0;

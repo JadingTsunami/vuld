@@ -38,7 +38,10 @@ void add_file( struct file_list* head, char* name )
         while( deh_ptr->next )
             deh_ptr = deh_ptr->next;
         deh_ptr->next = new_deh;
+    } else if ( head ) {
+        head->name = strdup(name);
     } else {
+        head = malloc(sizeof(struct file_list));
         head->name = strdup(name);
     }
 }
@@ -162,7 +165,7 @@ int find_files( char* fdir, char* fextension, struct file_list* fhead )
 
     d = opendir(fdir);
 
-    /* find all the deh files */
+    /* find all the files with the given extension */
     if( d ) {
         while ( (dir = readdir(d)) != NULL ) {
             ent = dir->d_name;
@@ -170,7 +173,8 @@ int find_files( char* fdir, char* fextension, struct file_list* fhead )
             for( i = 0; i < len; i++ )
                 ent[i] = toupper(ent[i]);
             if( len-4 >= 0 && strncmp( fextension, &ent[len-4], 4 ) == 0 ) {
-                add_file( fhead, ent );
+                if ( fhead )
+                    add_file( fhead, ent );
                 found++;
             }
         }

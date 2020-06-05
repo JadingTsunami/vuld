@@ -18,9 +18,9 @@ enum gametype check_for_game(char* directory)
 
     pathloc = strlen(tmpdir)-1;
     
-    if ( pathloc > 0 && pathloc+2 < MAX_PATH && directory[pathloc] != PATHSEP &&
+    if ( pathloc > 0 && pathloc+2 < MAX_PATH && directory[pathloc] != PATHSEP_CHAR &&
          (strcmp(tmpdir,".") != 0)) {
-        strcat( tmpdir, PATHSEP );
+        strcat( tmpdir, PATHSEP_STR );
         pathloc++;
     }
 

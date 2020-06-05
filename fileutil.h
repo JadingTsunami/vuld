@@ -24,9 +24,11 @@
 #include <stdbool.h>
 
 #if (__APPLE__ || __linux__ )
-#define PATHSEP '/'
+#define PATHSEP_CHAR '/'
+#define PATHSEP_STR "/"
 #else
-#define PATHSEP '\\'
+#define PATHSEP_CHAR '\\'
+#define PATHSEP_STR "\\"
 #endif
 
 struct file_list

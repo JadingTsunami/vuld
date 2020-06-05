@@ -40,6 +40,69 @@ struct gamepack {
     struct file_list* wad_files;
 };
 
+bool merge_all_deh( struct file_list* deh_files )
+{
+
+    char cmd[MAX_LINESIZE];
+    char fullpath[MAX_PATH+1];
+    char* tmp = NULL;
+    int i = 0;
+    int cmd_len = 0;
+
+    fullpath[0] = '\0';
+
+    if(!deh_files || !deh_files->name)
+        return false;
+
+    //snprintf( cmd, MAX_LINESIZE, "dehacked . -load %s\n", fullpath[0]?fullpath:chosen_deh->name );
+    snprintf( cmd, MAX_LINESIZE, "dehacked . -load ");
+    cmd_len = strlen(cmd);
+    while( deh_files && deh_files->name ) {
+        realpath( deh_files->name, fullpath );
+        /* for some reason, fullpath returns the wrong
+         * slashes for DOS usage
+         */
+        for( i = 0; i < strlen(fullpath); i++ )
+            if(fullpath[i]=='/') fullpath[i] = '\\';
+
+        cmd_len += strlen(fullpath) + 1;
+        if( cmd_len >= MAX_LINESIZE ) {
+            fprintf(stderr, "Error: Could not fit the DeHackEd command on the command line.\n");
+            fprintf(stderr, "Try loading fewer patches.\n");
+            return false;
+        }
+
+        strcat( cmd, fullpath );
+        strcat( cmd, " " );
+    }
+
+    /* run the Dehacked command */
+    if( !run_command(cmd) ) {
+        fprintf(stderr, "Error: Could not apply the DeHackEd patches.\n");
+        fprintf(stderr, "Check for DeHackEd errors.\n");
+        return false;
+    }
+
+    /* use the last DEHACKED as the EXE, but it's arbitrary */
+    tmp = strdup( deh_files->name );
+
+    for( i = strlen(tmp)-1; i >= 0; i-- )
+        if( tmp[i] == '.' )
+            tmp[i] = '\0';
+
+    snprintf( cmd, MAX_LINESIZE, "copy DOOMHACK.EXE %s\\%s.EXE\n", VULD_SUBDIR, tmp);
+
+    if (tmp)
+        free(tmp);
+
+    if( !run_command(cmd) ) {
+        fprintf(stderr, "Error: Could not copy the modified Game EXE.\n");
+        return false;
+    }
+
+    return true;
+}
+
 void destroy_gamepack( struct gamepack* g, bool delete_strings )
 {
     if(g) {

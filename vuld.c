@@ -24,6 +24,7 @@
 
 #include "fileutil.h"
 #include "genutil.h"
+#include "gameutil.h"
 
 #define VULD_SUBDIR "vuld_dir"
 
@@ -77,6 +78,15 @@ int main(int argc, char** argv)
 
     closedir(d);
 
+    /* check for doom or doom2 game files */
+    enum gametype game = check_for_game(".");
+
+    if( game == GAME_NONE ) {
+        fprintf(stderr, "Error: Did not find a game in the current directory.\n");
+        fprintf(stderr, "Make sure you run %s from your game directory.\n", argv[0]);
+        return RET_ERROR;
+    }
+
     /* if an INI is specified, use it, else go into launcher mode */
     if ( argc > 1 ) {
         /* INI mode */
@@ -84,11 +94,35 @@ int main(int argc, char** argv)
     } else {
         /* Launcher mode */
         /* For each directory */
-        /* Grab all DEH patches */
-        /* Grab all WAD files */
+        d = opendir( "." );
+
+        if ( !d ) {
+            fprintf(stderr, "Error: Could not open current directory.\n");
+            return RET_ERROR;
+        }
+
+        struct dirent* dirfile;
+        struct stat statbuf;
+        char* strfile;
+        while ( (dirfile = readdir(d)) != NULL ) {
+            strfile = dirfile->d_name;
+            if (stat(strfile, &statbuf) != 0)
+                continue;
+            else if S_ISDIR(statbuf.st_mode) {
+                /* Grab all DEH patches */
+                /* Grab all WAD files */
+            }
+
+        }
+
+        closedir(d);
+
+
+        /* Have the user pick one */
         /* Merge all DEH patches */
         /* Merge all WAD files */
 
     }
+    /* Launch it */
     return 0;
 }

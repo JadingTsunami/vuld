@@ -23,6 +23,12 @@
 
 #include <stdbool.h>
 
+#if (__APPLE__ || __linux__ )
+#define PATHSEP '/'
+#else
+#define PATHSEP '\\'
+#endif
+
 struct file_list
 {
     char* name;

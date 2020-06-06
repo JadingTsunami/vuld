@@ -33,7 +33,7 @@
 #define VULD_WAD "VULDMOD.WAD"
 #define VULD_EXE "VULDMOD.EXE"
 
-#define RET_ERROR (-1)
+#define RET_ERROR (1)
 
 struct gamepack {
     enum gametype game;

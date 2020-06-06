@@ -1,7 +1,7 @@
 @echo off
 if exist vuld_dir\vuldmod.exe del vuld_dir\vuldmod.exe
 if exist vuld_dir\vuldmod.wad del vuld_dir\vuldmod.wad
-if not exist doomhack.exe goto nodh
+if not exist doomhack.exe goto nodhe
 
 echo WARNING!!
 echo DoomHack.exe will be deleted.
@@ -9,6 +9,16 @@ choice Is this OK?
 if errorlevel 2 goto safeexit
 echo.
 del doomhack.exe
+
+:nodhe
+
+if not exist dehacked.ini goto nodh
+echo WARNING!!
+echo DEHACKED.INI will be deleted.
+choice Is this OK?
+if errorlevel 2 goto safeexit
+echo.
+del dehacked.ini
 
 :nodh
 vuld
@@ -31,7 +41,7 @@ goto exit
 
 :safeexit
 echo.
-echo Aborting program without changing anything.
+echo Aborting program without changing any game files.
 goto exit
 
 :error

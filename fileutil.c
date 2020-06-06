@@ -24,6 +24,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <stdbool.h>
+#include <unistd.h>
 
 #include "fileutil.h"
 #include "genutil.h"
@@ -221,6 +222,5 @@ void clear_screen()
 
 bool does_file_exist(char* path_to_file)
 {
-    char the_path[MAX_PATH];
-    return (bool)(realpath(path_to_file, the_path));
+    return (access( path_to_file, F_OK ) == 0);
 }

@@ -10,6 +10,7 @@ echo you will need to move or delete them yourself.
 echo.
 choice Is this OK?
 if errorlevel 2 goto safeexit
+echo.
 
 if not exist doomhack.exe goto nodhe
 
@@ -33,8 +34,12 @@ del dehacked.ini
 :nodh
 vuld -create
 if not errorlevel 0 goto :error
-
 echo.
+goto exit
+
+:error
+echo ERROR occurred -- please check the program output above.
+goto exit
 
 :safeexit
 echo Aborting program without creating any new files.

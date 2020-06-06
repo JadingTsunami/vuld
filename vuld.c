@@ -97,7 +97,7 @@ bool merge_all_deh( struct file_list* deh_files, char* deh_cmd, char* outfile )
             fprintf(stderr, "This is an internal error.\n");
             return false;
         }
-        snprintf( cmd, MAX_LINESIZE, "copy DOOMHACK.EXE %s\\%s\n", VULD_SUBDIR, outfile);
+        snprintf( cmd, MAX_LINESIZE, "copy DOOMHACK.EXE %s\\%s.EXE\n", VULD_SUBDIR, outfile);
 
     } else {
         snprintf( cmd, MAX_LINESIZE, "copy DOOMHACK.EXE %s\\%s\n", VULD_SUBDIR, VULD_EXE);
@@ -401,6 +401,10 @@ int main(int argc, char** argv)
 
     if(chosen_gamepack)
         destroy_gamepack(chosen_gamepack,false);
+
+    if( create_mode ) {
+        printf("\n\nVULD: Created files for %s in the %s subdirectory.\n", chosen_file->name, VULD_SUBDIR);
+    }
 
     /* Return control to the console */
     return 0;

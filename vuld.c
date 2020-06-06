@@ -235,12 +235,14 @@ struct gamepack* convert_dir_to_gamepack( char* dir_to_convert )
  */
 int main(int argc, char** argv)
 {
-    struct file_list* mod_dirs = NULL;
+    struct file_list mod_dirs;
     struct file_list* chosen_file;
     struct gamepack* chosen_gamepack;
     /* DOS files are 8.3 plus null terminator */
     char deh_prog[8 + 1 + 3 + 1];
     char wad_prog[8 + 1 + 3 + 1];
+
+    mod_dirs.name = NULL;
 
     /* we need at least dehacked and deusf or deutex */
     if ( does_file_exist("dehacked.exe") ) {
@@ -303,6 +305,7 @@ int main(int argc, char** argv)
             return RET_ERROR;
         }
 
+
         /* find all the directories that contain
          * game files
          */
@@ -311,13 +314,17 @@ int main(int argc, char** argv)
         char* strfile;
         while ( (dirfile = readdir(d)) != NULL ) {
             strfile = dirfile->d_name;
-            if (stat(strfile, &statbuf) != 0)
+            if( strcasecmp( strfile, VULD_SUBDIR ) == 0 ||
+                    strcmp( strfile, "." ) == 0 ||
+                    strcmp( strfile, "..") == 0 )
                 continue;
-            else if S_ISDIR(statbuf.st_mode) {
+            if (stat(strfile, &statbuf) != 0) {
+                continue;
+            } else if S_ISDIR(statbuf.st_mode) {
                 /* NOTE: optimization could be to stop after 1 file is found */
                 if( find_files(dirfile->d_name, ".DEH", NULL) > 0 ||
                         find_files(dirfile->d_name, ".WAD", NULL) > 0 ) {
-                    add_file( mod_dirs, dirfile->d_name );
+                    add_file( &mod_dirs, dirfile->d_name );
                 }
             }
 
@@ -325,8 +332,13 @@ int main(int argc, char** argv)
 
         closedir(d);
 
+        if( !mod_dirs.name ) {
+            fprintf(stderr, "Didn't find any folders with WAD or DeHackEd files in them.\n");
+            return RET_ERROR;
+        }
+
         /* Have the user pick one */
-        chosen_file = choose_file( mod_dirs, "Select a gameplay mod:\n", 5 );
+        chosen_file = choose_file( &mod_dirs, "Select a gameplay mod:\n", 5 );
 
         /* turn it into a game pack */
         chosen_gamepack = convert_dir_to_gamepack(chosen_file->name);

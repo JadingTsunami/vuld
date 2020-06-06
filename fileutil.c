@@ -40,9 +40,6 @@ void add_file( struct file_list* head, char* name )
         deh_ptr->next = new_deh;
     } else if ( head ) {
         head->name = strdup(name);
-    } else {
-        head = malloc(sizeof(struct file_list));
-        head->name = strdup(name);
     }
 }
 
@@ -169,6 +166,8 @@ int find_files( char* fdir, char* fextension, struct file_list* fhead )
     if( d ) {
         while ( (dir = readdir(d)) != NULL ) {
             ent = dir->d_name;
+            if( ent && (strcmp(ent, ".") == 0 || strcmp(ent, "..") == 0) )
+                continue;
             len = strlen(ent);
             for( i = 0; i < len; i++ )
                 ent[i] = toupper(ent[i]);

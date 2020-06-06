@@ -18,10 +18,26 @@ Unzip the sources and run:
 ## Instructions
 
 * Gather the required ingredients below and put them in your game folder.
+    * **Required**: Only ONE game per folder! Do not mix game assets from different versions or sequels.
 * Unzip the vanilla mods with flats, sprites, etc. and/or DeHackEd files into subdirectories of your main game folder.
+    * **Required**: Only ONE mod per subfolder! All mods (DEH and WAD files) in a subfolder will be merged at the same time, potentially overwriting one another.
 * While in your main game folder, type `VRUN`, press enter, select the mod you want to play and it should compile and launch without modifying your game files.
     * **Warning:** If you have a doomhack.exe, back it up first or it will be overwritten!
     * If DeHackEd asks if you want to create a **doomhack.exe**, say "yes" to avoid overwriting data in your main game files.
+
+## TODO List
+
+### VULD
+
+* INI file mode
+* Detect multiple games in a folder and bail out
+* Automatic detection of game/mod pairing(?)
+
+### DEHPICK
+
+* Documentation for standalone `DEHPICK.EXE`
+* Allow user-specified DEH folder
+
 
 ## License
 

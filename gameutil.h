@@ -25,6 +25,7 @@ enum gametype {
     GAME_NONE,
     GAME_DOOM,
     GAME_DOOM2,
+    GAME_MULTIPLE,
     GAME_LAST
 };
 

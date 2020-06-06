@@ -31,6 +31,7 @@ enum gametype check_for_game(char* directory)
 {
     char tmpdir[MAX_PATH];
     int pathloc = 0;
+    enum gametype game_found = GAME_NONE;
 
     if ( strlen(directory) >= MAX_PATH-1 )
         return GAME_NONE;
@@ -54,32 +55,57 @@ enum gametype check_for_game(char* directory)
     if ( (pathloc + 8 + 1 + 3 + 1) >= MAX_PATH )
         return GAME_NONE;
 
-    /* check for doom files */
+    /* check for game files */
+
+    /* check for an executable */
+    /* at each point, we expect to see only ONE
+     * set of game files. If anything is incomplete
+     * or we find multiple sets, return GAME_MULTIPLE
+     * immediately, as no support for multiple
+     * games is expected
+     */
     tmpdir[pathloc] = '\0';
     strcat( tmpdir, "DOOM.EXE" );
 
     if ( does_file_exist( tmpdir ) ) {
-        tmpdir[pathloc] = '\0';
-        strcat( tmpdir, "DOOM.WAD" );
-
-        if( does_file_exist( tmpdir ) ) {
-            return GAME_DOOM;
-        }
+        game_found = GAME_DOOM;
     }
 
-    /* check for doom2 files */
     tmpdir[pathloc] = '\0';
     strcat( tmpdir, "DOOM2.EXE" );
 
     if ( does_file_exist( tmpdir ) ) {
-        tmpdir[pathloc] = '\0';
-        strcat( tmpdir, "DOOM2.WAD" );
-
-        if( does_file_exist( tmpdir ) ) {
-            return GAME_DOOM2;
+        if( game_found == GAME_NONE ) {
+            game_found = GAME_DOOM2;
+        } else {
+            return GAME_MULTIPLE;
         }
     }
 
-    /* didn't find any valid game */
-    return GAME_NONE;
+    /* check for an IWAD */
+
+    tmpdir[pathloc] = '\0';
+    strcat( tmpdir, "DOOM.WAD" );
+
+    if( !does_file_exist( tmpdir ) && game_found == GAME_DOOM ) {
+        /* found a DOOM.EXE but no commercial IWAD. */
+        return GAME_MULTIPLE;
+    }
+
+    tmpdir[pathloc] = '\0';
+    strcat( tmpdir, "DOOM1.WAD" );
+    if( does_file_exist( tmpdir ) ) {
+        /* we have a Shareware IWAD, but no executable. */
+        return GAME_MULTIPLE;
+    }
+
+    tmpdir[pathloc] = '\0';
+    strcat( tmpdir, "DOOM2.WAD" );
+
+    if( !does_file_exist( tmpdir ) && game_found == GAME_DOOM2 ) {
+        /* found a DOOM2.EXE but no IWAD */
+        return GAME_MULTIPLE;
+    }
+
+    return game_found;
 }

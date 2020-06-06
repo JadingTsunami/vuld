@@ -12,13 +12,15 @@ Unzip the sources and run:
 
 * VULD
 * [CWSDPMI](http://sandmann.dotster.com/cwsdpmi/)
-* DEHACKED.EXE
-* DEUSF.EXE or DEUTEX.EXE
+* [DEHACKED.EXE](https://www.doomworld.com/idgames/utils/exe_edit/dhe31)
+    * **NOTE**: Delete or move the DEHACKED.INI file before starting!
+* [DEUSF.EXE or DEUTEX.EXE](http://www.gamers.org/addons/utils/deutex/)
 
 ## Instructions
 
 * Gather the required ingredients below and put them in your game folder.
     * **Required**: Only ONE game per folder! Do not mix game assets from different versions or sequels.
+    * **Required**: Delete or move the DEHACKED.INI file before starting, or it may interfere with VULD patching.
 * Unzip the vanilla mods with flats, sprites, etc. and/or DeHackEd files into subdirectories of your main game folder.
     * **Required**: Only ONE mod per subfolder! All mods (DEH and WAD files) in a subfolder will be merged at the same time, potentially overwriting one another.
 * While in your main game folder, type `VRUN`, press enter, select the mod you want to play and it should compile and launch without modifying your game files.

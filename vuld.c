@@ -22,6 +22,7 @@
 #include <stdlib.h>
 #include <dirent.h>
 #include <string.h>
+#include <stdbool.h>
 #include <sys/stat.h>
 
 #include "fileutil.h"
@@ -29,6 +30,8 @@
 #include "gameutil.h"
 
 #define VULD_SUBDIR "vuld_dir"
+#define VULD_WAD "VULD.WAD"
+#define VULD_EXE "VULD.EXE"
 
 #define RET_ERROR (-1)
 
@@ -40,7 +43,7 @@ struct gamepack {
     struct file_list* wad_files;
 };
 
-bool merge_all_deh( struct file_list* deh_files )
+bool merge_all_deh( struct file_list* deh_files, char* deh_cmd )
 {
 
     char cmd[MAX_LINESIZE];
@@ -51,11 +54,11 @@ bool merge_all_deh( struct file_list* deh_files )
 
     fullpath[0] = '\0';
 
-    if(!deh_files || !deh_files->name)
+    if(!deh_files || !deh_files->name || !deh_cmd)
         return false;
 
     //snprintf( cmd, MAX_LINESIZE, "dehacked . -load %s\n", fullpath[0]?fullpath:chosen_deh->name );
-    snprintf( cmd, MAX_LINESIZE, "dehacked . -load ");
+    snprintf( cmd, MAX_LINESIZE, "%s . -load ", deh_cmd );
     cmd_len = strlen(cmd);
     while( deh_files && deh_files->name ) {
         realpath( deh_files->name, fullpath );
@@ -72,8 +75,10 @@ bool merge_all_deh( struct file_list* deh_files )
             return false;
         }
 
-        strcat( cmd, fullpath );
+        strcat( cmd, fullpath[0]?fullpath:deh_files->name );
         strcat( cmd, " " );
+
+        deh_files = deh_files->next;
     }
 
     /* run the Dehacked command */
@@ -83,20 +88,76 @@ bool merge_all_deh( struct file_list* deh_files )
         return false;
     }
 
-    /* use the last DEHACKED as the EXE, but it's arbitrary */
-    tmp = strdup( deh_files->name );
-
-    for( i = strlen(tmp)-1; i >= 0; i-- )
-        if( tmp[i] == '.' )
-            tmp[i] = '\0';
-
-    snprintf( cmd, MAX_LINESIZE, "copy DOOMHACK.EXE %s\\%s.EXE\n", VULD_SUBDIR, tmp);
-
-    if (tmp)
-        free(tmp);
+    snprintf( cmd, MAX_LINESIZE, "copy DOOMHACK.EXE %s\\%s.EXE\n", VULD_SUBDIR, VULD_EXE);
 
     if( !run_command(cmd) ) {
         fprintf(stderr, "Error: Could not copy the modified Game EXE.\n");
+        return false;
+    }
+
+    return true;
+}
+
+bool merge_all_wad( struct file_list* wad_files, char* wad_cmd )
+{
+    char cmd[MAX_LINESIZE];
+    char fullpath[MAX_PATH+1];
+    char* tmp = NULL;
+    int i = 0;
+    int cmd_len = strlen("COPY ") + strlen(VULD_SUBDIR) + strlen(VULD_WAD) + 1;
+    bool first = true;
+
+    fullpath[0] = '\0';
+
+    if(!wad_files || !wad_files->name || !wad_cmd)
+        return false;
+
+    do {
+
+        realpath( wad_files->name, fullpath );
+
+        /* for some reason, fullpath returns the wrong
+         * slashes for DOS usage
+         */
+        for( i = 0; i < strlen(fullpath); i++ )
+            if(fullpath[i]=='/') fullpath[i] = '\\';
+
+        if( cmd_len+MAX(strlen(wad_files->name),strlen(fullpath))+1 >= MAX_LINESIZE ) {
+            fprintf(stderr, "Error: Could not fit the DeuSF command on the command line.\n");
+            fprintf(stderr, "Try loading fewer WAD files.\n");
+            return false;
+        }
+
+        if( first ) {
+            first = false;
+
+            /* create the vuld wad */
+            snprintf( cmd, MAX_LINESIZE, "copy %s %s\\%s \n", (fullpath[0]?fullpath:wad_files->name), VULD_SUBDIR, VULD_WAD);
+
+            if( !run_command(cmd) ) {
+                fprintf(stderr, "Error: Could create the merged WAD files.\n");
+                return false;
+            }
+
+        } else {
+            /* deusf join with the vuld wad */
+            snprintf( cmd, MAX_LINESIZE, "%s -join %s\\%s %s\n", wad_cmd, VULD_SUBDIR, VULD_WAD, (fullpath[0]?fullpath:wad_files->name));
+
+            if( !run_command(cmd) ) {
+                fprintf(stderr, "Error: DeuSF failed to merge the WAD files.\n");
+                return false;
+            }
+        }
+
+        wad_files = wad_files->next;
+    } while( wad_files && wad_files->name );
+
+    /* do APPEND on VULD */
+    snprintf( cmd, MAX_LINESIZE, "%s -append %s\\%s\n", wad_cmd, VULD_SUBDIR, VULD_WAD );
+
+    if( !run_command(cmd) ) {
+        fprintf(stderr, "Error: Could not create the final merged WAD.\n");
+        fprintf(stderr, "Check for DeuSF errors.\n");
         return false;
     }
 
@@ -179,7 +240,7 @@ int main(int argc, char** argv)
     struct gamepack* chosen_gamepack;
     /* DOS files are 8.3 plus null terminator */
     char deh_prog[8 + 1 + 3 + 1];
-    char deusf_prog[8 + 1 + 3 + 1];
+    char wad_prog[8 + 1 + 3 + 1];
 
     /* we need at least dehacked and deusf or deutex */
     if ( does_file_exist("dehacked.exe") ) {
@@ -190,9 +251,9 @@ int main(int argc, char** argv)
     }
 
     if (does_file_exist("deusf.exe")) {
-        strcpy(deusf_prog,"deusf.exe");
+        strcpy(wad_prog,"deusf.exe");
     } else if (does_file_exist("deutex.exe")) {
-        strcpy(deusf_prog,"deutex.exe");
+        strcpy(wad_prog,"deutex.exe");
     } else {
         fprintf(stderr, "Error: No DEUSF.EXE or DEUTEX.EXE found.\n");
         return RET_ERROR;
@@ -277,9 +338,12 @@ int main(int argc, char** argv)
         }
 
         /* Merge all DEH patches */
+        if( chosen_gamepack->deh_files )
+            merge_all_deh( chosen_gamepack->deh_files, deh_prog );
 
         /* Merge all WAD files */
-
+        if( chosen_gamepack->wad_files )
+            merge_all_wad( chosen_gamepack->wad_files, wad_prog );
 
         if(chosen_gamepack)
             destroy_gamepack(chosen_gamepack,false);

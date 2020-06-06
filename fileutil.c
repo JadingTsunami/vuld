@@ -28,6 +28,18 @@
 #include "fileutil.h"
 #include "genutil.h"
 
+struct file_list* create_file_list()
+{
+    struct file_list* f = malloc(sizeof(struct file_list));
+
+    if(!f) return NULL;
+
+    f->name = NULL;
+    f->next = NULL;
+
+    return f;
+}
+
 void add_file( struct file_list* head, char* name )
 {
     if( head && head->name ) {
@@ -163,6 +175,12 @@ int find_files( char* fdir, char* fextension, struct file_list* fhead )
     int found = 0;
     int i = 0;
     int len = 0;
+    char fpath[strlen(fdir)+8+1+3+1];
+
+    fpath[0] = '\0';
+
+    if( strcmp(fdir,".") != 0 )
+        strcpy(fpath,fdir);
 
     d = opendir(fdir);
 
@@ -176,8 +194,16 @@ int find_files( char* fdir, char* fextension, struct file_list* fhead )
             for( i = 0; i < len; i++ )
                 ent[i] = toupper(ent[i]);
             if( len-4 >= 0 && strncmp( fextension, &ent[len-4], 4 ) == 0 ) {
-                if ( fhead )
-                    add_file( fhead, ent );
+                if ( fhead ) {
+                    if( fpath[0] ) {
+                        strcat(fpath,"\\");
+                        strcat(fpath,ent);
+                        add_file( fhead, fpath );
+                        strcpy(fpath,fdir);
+                    } else {
+                        add_file( fhead, ent );
+                    }
+                }
                 found++;
             }
         }

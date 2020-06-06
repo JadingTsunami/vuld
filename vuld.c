@@ -82,15 +82,15 @@ bool merge_all_deh( struct file_list* deh_files, char* deh_cmd )
     }
 
     /* run the Dehacked command */
-    if( !run_command(cmd) ) {
+    if( run_command(cmd) ) {
         fprintf(stderr, "Error: Could not apply the DeHackEd patches.\n");
         fprintf(stderr, "Check for DeHackEd errors.\n");
         return false;
     }
 
-    snprintf( cmd, MAX_LINESIZE, "copy DOOMHACK.EXE %s\\%s.EXE\n", VULD_SUBDIR, VULD_EXE);
+    snprintf( cmd, MAX_LINESIZE, "copy DOOMHACK.EXE %s\\%s\n", VULD_SUBDIR, VULD_EXE);
 
-    if( !run_command(cmd) ) {
+    if( run_command(cmd) ) {
         fprintf(stderr, "Error: Could not copy the modified Game EXE.\n");
         return false;
     }
@@ -134,7 +134,7 @@ bool merge_all_wad( struct file_list* wad_files, char* wad_cmd )
             /* create the vuld wad */
             snprintf( cmd, MAX_LINESIZE, "copy %s %s\\%s \n", (fullpath[0]?fullpath:wad_files->name), VULD_SUBDIR, VULD_WAD);
 
-            if( !run_command(cmd) ) {
+            if( run_command(cmd) ) {
                 fprintf(stderr, "Error: Could create the merged WAD files.\n");
                 return false;
             }
@@ -143,7 +143,7 @@ bool merge_all_wad( struct file_list* wad_files, char* wad_cmd )
             /* deusf join with the vuld wad */
             snprintf( cmd, MAX_LINESIZE, "%s -join %s\\%s %s\n", wad_cmd, VULD_SUBDIR, VULD_WAD, (fullpath[0]?fullpath:wad_files->name));
 
-            if( !run_command(cmd) ) {
+            if( run_command(cmd) ) {
                 fprintf(stderr, "Error: DeuSF failed to merge the WAD files.\n");
                 return false;
             }
@@ -155,7 +155,7 @@ bool merge_all_wad( struct file_list* wad_files, char* wad_cmd )
     /* do APPEND on VULD */
     snprintf( cmd, MAX_LINESIZE, "%s -append %s\\%s\n", wad_cmd, VULD_SUBDIR, VULD_WAD );
 
-    if( !run_command(cmd) ) {
+    if( run_command(cmd) ) {
         fprintf(stderr, "Error: Could not create the final merged WAD.\n");
         fprintf(stderr, "Check for DeuSF errors.\n");
         return false;
@@ -204,21 +204,13 @@ struct gamepack* convert_dir_to_gamepack( char* dir_to_convert )
     if(!dir_to_convert)
         return NULL;
 
-    struct gamepack* gp = create_gamepack(GAME_NONE,NULL,NULL,malloc(sizeof(struct file_list)),malloc(sizeof(struct file_list)));
+    struct gamepack* gp = create_gamepack(GAME_NONE,NULL,NULL,create_file_list(),create_file_list());
 
     if(!gp || !gp->deh_files || !gp->wad_files) {
         destroy_gamepack(gp,false);
         return NULL;
-    } else {
-        gp->deh_files->name = NULL;
-        gp->deh_files->next = NULL;
-        gp->wad_files->name = NULL;
-        gp->wad_files->next = NULL;
     }
-
-    printf("Get1\n");
     find_files(dir_to_convert,".DEH",gp->deh_files);
-    printf("Get2\n");
     find_files(dir_to_convert,".WAD",gp->wad_files);
 
     return gp;

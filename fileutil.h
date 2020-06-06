@@ -45,5 +45,6 @@ int run_command(char* cmd);
 int find_files( char* fdir, char* fextension, struct file_list* fhead );
 void clear_screen();
 bool does_file_exist(char* path_to_file);
+struct file_list* create_file_list();
 
 #endif

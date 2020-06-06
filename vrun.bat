@@ -1,5 +1,6 @@
 @echo off
-del vuld_dir\*.*
+if exist vuld_dir\vuld.exe del vuld_dir\vuld.exe
+if exist vuld_dir\vuld.wad del vuld_dir\vuld.wad
 if not exist doomhack.exe goto nodh
 
 echo WARNING!!

@@ -13,10 +13,17 @@ del doomhack.exe
 :nodh
 vuld
 if not errorlevel 0 goto :error
-if exist vuld_dir\vuld.exe goto runvuld
+
+if exist vuld_dir\vuld.exe goto checkwad
 if exist doom.exe copy doom.exe vuld_dir\vuld.exe
-if exist vuld_dir\vuld.exe goto runvuld
+if exist vuld_dir\vuld.exe goto checkwad
 if exist doom2.exe copy doom2.exe vuld_dir\vuld.exe
+
+:checkwad
+if exist vuld_dir\vuld.wad goto runvuld
+if exist doom.wad copy doom.wad vuld_dir\vuld.wad
+if exist vuld_dir\vuld.wad goto runvuld
+if exist doom2.wad copy doom2.wad vuld_dir\vuld.wad
 
 :runvuld
 vuld_dir\vuld.exe -file vuld_dir\vuld.wad

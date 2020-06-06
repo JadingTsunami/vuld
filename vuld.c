@@ -33,6 +33,9 @@
 #define VULD_WAD "VULDMOD.WAD"
 #define VULD_EXE "VULDMOD.EXE"
 
+#define VULD_CREATE_ARG "-create"
+#define VULD_CREATE_ARG_SHORT "-c"
+
 #define RET_ERROR (1)
 
 struct gamepack {
@@ -43,12 +46,11 @@ struct gamepack {
     struct file_list* wad_files;
 };
 
-bool merge_all_deh( struct file_list* deh_files, char* deh_cmd )
+bool merge_all_deh( struct file_list* deh_files, char* deh_cmd, char* outfile )
 {
 
     char cmd[MAX_LINESIZE];
     char fullpath[MAX_PATH+1];
-    char* tmp = NULL;
     int i = 0;
     int cmd_len = 0;
 
@@ -88,7 +90,18 @@ bool merge_all_deh( struct file_list* deh_files, char* deh_cmd )
         return false;
     }
 
-    snprintf( cmd, MAX_LINESIZE, "copy DOOMHACK.EXE %s\\%s\n", VULD_SUBDIR, VULD_EXE);
+    if( outfile ) {
+        if( (strrchr(outfile, '.') != NULL) || strlen(outfile) == 0 || strlen(outfile) > 8 ) {
+            fprintf(stderr, "Error: Could not create the requested files.\n");
+            fprintf(stderr, "A file naming error occurred.\n");
+            fprintf(stderr, "This is an internal error.\n");
+            return false;
+        }
+        snprintf( cmd, MAX_LINESIZE, "copy DOOMHACK.EXE %s\\%s\n", VULD_SUBDIR, outfile);
+
+    } else {
+        snprintf( cmd, MAX_LINESIZE, "copy DOOMHACK.EXE %s\\%s\n", VULD_SUBDIR, VULD_EXE);
+    }
 
     if( run_command(cmd) ) {
         fprintf(stderr, "Error: Could not copy the modified Game EXE.\n");
@@ -98,14 +111,27 @@ bool merge_all_deh( struct file_list* deh_files, char* deh_cmd )
     return true;
 }
 
-bool merge_all_wad( struct file_list* wad_files, char* wad_cmd )
+bool merge_all_wad( struct file_list* wad_files, char* wad_cmd, char* outfile )
 {
     char cmd[MAX_LINESIZE];
     char fullpath[MAX_PATH+1];
-    char* tmp = NULL;
     int i = 0;
-    int cmd_len = strlen("COPY ") + strlen(VULD_SUBDIR) + strlen(VULD_WAD) + 1;
+    int cmd_len = strlen("COPY ") + strlen(VULD_SUBDIR) + 8 + 1 + 3 + 1;
     bool first = true;
+    char outwad[8 + 1 + 3 + 1];
+
+    if( outfile ) {
+        if ( strrchr(outfile, '.') != NULL || strlen(outfile) == 0 || strlen(outfile) > 8 ) {
+            fprintf(stderr, "Error: Could not create the requested files.\n");
+            fprintf(stderr, "A file naming error occurred.\n");
+            fprintf(stderr, "This is an internal error.\n");
+            return false;
+        }
+        strcpy( outwad, outfile );
+        strcat( outwad, ".WAD" );
+    } else {
+        strcpy( outwad, VULD_WAD );
+    }
 
     fullpath[0] = '\0';
 
@@ -132,7 +158,7 @@ bool merge_all_wad( struct file_list* wad_files, char* wad_cmd )
             first = false;
 
             /* create the vuld wad */
-            snprintf( cmd, MAX_LINESIZE, "copy %s %s\\%s \n", (fullpath[0]?fullpath:wad_files->name), VULD_SUBDIR, VULD_WAD);
+            snprintf( cmd, MAX_LINESIZE, "copy %s %s\\%s \n", (fullpath[0]?fullpath:wad_files->name), VULD_SUBDIR, outwad);
 
             if( run_command(cmd) ) {
                 fprintf(stderr, "Error: Could create the merged WAD files.\n");
@@ -141,7 +167,7 @@ bool merge_all_wad( struct file_list* wad_files, char* wad_cmd )
 
         } else {
             /* deusf join with the vuld wad */
-            snprintf( cmd, MAX_LINESIZE, "%s -join %s\\%s %s\n", wad_cmd, VULD_SUBDIR, VULD_WAD, (fullpath[0]?fullpath:wad_files->name));
+            snprintf( cmd, MAX_LINESIZE, "%s -join %s\\%s %s\n", wad_cmd, VULD_SUBDIR, outwad, (fullpath[0]?fullpath:wad_files->name));
 
             if( run_command(cmd) ) {
                 fprintf(stderr, "Error: DeuSF failed to merge the WAD files.\n");
@@ -153,7 +179,7 @@ bool merge_all_wad( struct file_list* wad_files, char* wad_cmd )
     } while( wad_files && wad_files->name );
 
     /* do APPEND on VULD */
-    snprintf( cmd, MAX_LINESIZE, "%s -append %s\\%s\n", wad_cmd, VULD_SUBDIR, VULD_WAD );
+    snprintf( cmd, MAX_LINESIZE, "%s -append %s\\%s\n", wad_cmd, VULD_SUBDIR, outwad );
 
     if( run_command(cmd) ) {
         fprintf(stderr, "Error: Could not create the final merged WAD.\n");
@@ -242,6 +268,7 @@ int main(int argc, char** argv)
     /* DOS files are 8.3 plus null terminator */
     char deh_prog[8 + 1 + 3 + 1];
     char wad_prog[8 + 1 + 3 + 1];
+    bool create_mode = false;
 
     mod_dirs.name = NULL;
 
@@ -282,85 +309,99 @@ int main(int argc, char** argv)
 
     closedir(d);
 
-    /* if an INI is specified, use it, else go into launcher mode */
+    /* process command line arguments */
     if ( argc > 1 ) {
-        /* INI mode */
-        /* TODO: Implement */
-    } else {
-
-        /* check for doom or doom2 game files */
-        enum gametype game = check_for_game(".");
-
-        if( game == GAME_NONE ) {
-            fprintf(stderr, "Error: Did not find a game in the current directory.\n");
-            fprintf(stderr, "Make sure you run %s from your game directory.\n", argv[0]);
-            return RET_ERROR;
-        }
-
-        /* Launcher mode */
-        /* For each directory */
-        d = opendir( "." );
-
-        if ( !d ) {
-            fprintf(stderr, "Error: Could not open current directory.\n");
-            return RET_ERROR;
-        }
-
-
-        /* find all the directories that contain
-         * game files
-         */
-        struct dirent* dirfile;
-        struct stat statbuf;
-        char* strfile;
-        while ( (dirfile = readdir(d)) != NULL ) {
-            strfile = dirfile->d_name;
-            if( strcasecmp( strfile, VULD_SUBDIR ) == 0 ||
-                    strcmp( strfile, "." ) == 0 ||
-                    strcmp( strfile, "..") == 0 )
-                continue;
-            if (stat(strfile, &statbuf) != 0) {
-                continue;
-            } else if S_ISDIR(statbuf.st_mode) {
-                /* NOTE: optimization could be to stop after 1 file is found */
-                if( find_files(dirfile->d_name, ".DEH", NULL) > 0 ||
-                        find_files(dirfile->d_name, ".WAD", NULL) > 0 ) {
-                    add_file( &mod_dirs, dirfile->d_name );
-                }
+        for( int i = 1; i < argc; i++ ) {
+            if( (strcasecmp( argv[i], VULD_CREATE_ARG ) == 0) ||
+                    (strcasecmp( argv[i], VULD_CREATE_ARG_SHORT ) == 0) ) {
+                create_mode = true;
+            } else {
+                fprintf(stderr, "Error: Unkown argument found at position %d: %s.\n", i, argv[i]);
+                return RET_ERROR;
             }
 
         }
-
-        closedir(d);
-
-        if( !mod_dirs.name ) {
-            fprintf(stderr, "Didn't find any folders with WAD or DeHackEd files in them.\n");
-            return RET_ERROR;
-        }
-
-        /* Have the user pick one */
-        chosen_file = choose_file( &mod_dirs, "Select a gameplay mod:\n", 5 );
-
-        /* turn it into a game pack */
-        chosen_gamepack = convert_dir_to_gamepack(chosen_file->name);
-
-        if( !chosen_gamepack ) {
-            fprintf(stderr, "Wasn't able to create a game pack.\n");
-            fprintf(stderr, "This is an internal error.\n");
-            return RET_ERROR;
-        }
-
-        /* Merge all DEH patches */
-        if( chosen_gamepack->deh_files )
-            merge_all_deh( chosen_gamepack->deh_files, deh_prog );
-
-        /* Merge all WAD files */
-        if( chosen_gamepack->wad_files )
-            merge_all_wad( chosen_gamepack->wad_files, wad_prog );
-
-        if(chosen_gamepack)
-            destroy_gamepack(chosen_gamepack,false);
     }
-    /* Launch it */
+
+    /* check for doom or doom2 game files */
+    enum gametype game = check_for_game(".");
+
+    if( game == GAME_NONE ) {
+        fprintf(stderr, "Error: Did not find a game in the current directory.\n");
+        fprintf(stderr, "Make sure you run %s from your game directory.\n", argv[0]);
+        return RET_ERROR;
+    } else if( game == GAME_MULTIPLE ) {
+        fprintf(stderr, "Error: Found multiple versions of games in the current directory.\n");
+        fprintf(stderr, "Make sure you run %s from your game directory, and only include.\n", argv[0]);
+        fprintf(stderr, "ONE set of game files (either DOOM.EXE and DOOM.WAD or DOOM2.EXE and DOOM2.WAD).\n");
+        return RET_ERROR;
+
+    }
+
+    /* Launcher mode */
+    /* For each directory */
+    d = opendir( "." );
+
+    if ( !d ) {
+        fprintf(stderr, "Error: Could not open current directory.\n");
+        return RET_ERROR;
+    }
+
+
+    /* find all the directories that contain
+     * game files
+     */
+    struct dirent* dirfile;
+    struct stat statbuf;
+    char* strfile;
+    while ( (dirfile = readdir(d)) != NULL ) {
+        strfile = dirfile->d_name;
+        if( strcasecmp( strfile, VULD_SUBDIR ) == 0 ||
+                strcmp( strfile, "." ) == 0 ||
+                strcmp( strfile, "..") == 0 )
+            continue;
+        if (stat(strfile, &statbuf) != 0) {
+            continue;
+        } else if S_ISDIR(statbuf.st_mode) {
+            /* NOTE: optimization could be to stop after 1 file is found */
+            if( find_files(dirfile->d_name, ".DEH", NULL) > 0 ||
+                    find_files(dirfile->d_name, ".WAD", NULL) > 0 ) {
+                add_file( &mod_dirs, dirfile->d_name );
+            }
+        }
+
+    }
+
+    closedir(d);
+
+    if( !mod_dirs.name ) {
+        fprintf(stderr, "Didn't find any folders with WAD or DeHackEd files in them.\n");
+        return RET_ERROR;
+    }
+
+    /* Have the user pick one */
+    chosen_file = choose_file( &mod_dirs, "Select a gameplay mod:\n", 5 );
+
+    /* turn it into a game pack */
+    chosen_gamepack = convert_dir_to_gamepack(chosen_file->name);
+
+    if( !chosen_gamepack ) {
+        fprintf(stderr, "Wasn't able to create a game pack.\n");
+        fprintf(stderr, "This is an internal error.\n");
+        return RET_ERROR;
+    }
+
+    /* Merge all DEH patches */
+    if( chosen_gamepack->deh_files )
+        merge_all_deh( chosen_gamepack->deh_files, deh_prog, (create_mode?chosen_file->name:NULL) );
+
+    /* Merge all WAD files */
+    if( chosen_gamepack->wad_files )
+        merge_all_wad( chosen_gamepack->wad_files, wad_prog, (create_mode?chosen_file->name:NULL) );
+
+    if(chosen_gamepack)
+        destroy_gamepack(chosen_gamepack,false);
+
+    /* Return control to the console */
     return 0;
 }

@@ -30,8 +30,8 @@
 #include "gameutil.h"
 
 #define VULD_SUBDIR "vuld_dir"
-#define VULD_WAD "VULD.WAD"
-#define VULD_EXE "VULD.EXE"
+#define VULD_WAD "VULDMOD.WAD"
+#define VULD_EXE "VULDMOD.EXE"
 
 #define RET_ERROR (-1)
 

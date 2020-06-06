@@ -1,10 +1,28 @@
 @echo off
 del vuld_dir\*.*
-if exist doomhack.exe
-    echo WARNING!!
-    echo DoomHack.exe will be deleted.
-    echo Press Ctrl-C to quit or
-    pause
+if not exist doomhack.exe goto nodh
+
+echo WARNING!!
+echo DoomHack.exe will be deleted.
+choice Is this OK?
+if errorlevel 2 goto safeexit
+echo.
 del doomhack.exe
+
+:nodh
 vuld
+if not errorlevel 0 goto :error
 vuld_dir\vuld.exe -file vuld_dir\vuld.wad
+goto exit
+
+:safeexit
+echo.
+echo Aborting program without changing anything.
+goto exit
+
+:error
+echo.
+echo Error occurred running VULD; exiting.
+goto exit
+
+:exit

@@ -205,11 +205,20 @@ struct gamepack* convert_dir_to_gamepack( char* dir_to_convert )
         return NULL;
 
     struct gamepack* gp = create_gamepack(GAME_NONE,NULL,NULL,malloc(sizeof(struct file_list)),malloc(sizeof(struct file_list)));
-    if(!gp || !gp->deh_files || !gp->wad_files)
+
+    if(!gp || !gp->deh_files || !gp->wad_files) {
         destroy_gamepack(gp,false);
         return NULL;
+    } else {
+        gp->deh_files->name = NULL;
+        gp->deh_files->next = NULL;
+        gp->wad_files->name = NULL;
+        gp->wad_files->next = NULL;
+    }
 
+    printf("Get1\n");
     find_files(dir_to_convert,".DEH",gp->deh_files);
+    printf("Get2\n");
     find_files(dir_to_convert,".WAD",gp->wad_files);
 
     return gp;

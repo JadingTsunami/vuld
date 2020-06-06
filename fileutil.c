@@ -31,13 +31,17 @@
 void add_file( struct file_list* head, char* name )
 {
     if( head && head->name ) {
-        struct file_list* new_deh = malloc(sizeof(struct file_list));
-        new_deh->name = strdup(name);
-        new_deh->next = NULL;
-        struct file_list* deh_ptr = head;
-        while( deh_ptr->next )
-            deh_ptr = deh_ptr->next;
-        deh_ptr->next = new_deh;
+        struct file_list* new_file = malloc(sizeof(struct file_list));
+        if(!new_file) {
+            fprintf(stderr,"Error: Out of memory when building internal file structures.\n");
+            return;
+        }
+        new_file->name = strdup(name);
+        new_file->next = NULL;
+        struct file_list* file_ptr = head;
+        while( file_ptr->next )
+            file_ptr = file_ptr->next;
+        file_ptr->next = new_file;
     } else if ( head ) {
         head->name = strdup(name);
     }

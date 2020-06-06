@@ -1,3 +1,4 @@
+@echo off
 del vuld_dir\*.*
 if exist doomhack.exe
     echo WARNING!!

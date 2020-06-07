@@ -29,19 +29,20 @@ Unzip the sources and run:
 
 ## TODO List
 
-### VULD
-
 * INI file mode
-* Detect multiple games in a folder and bail out
 * Automatic detection of game/mod pairing(?)
 
-### DEHPICK
 
-* Documentation for standalone `DEHPICK.EXE`
-* Allow user-specified DEH folder
+# DEHPICK
+
+DEHPICK is a simple utility to find and apply DeHackEd patches.
+
+Run `DEHPICK.EXE` in a folder containing your game files and a set of DeHackEd patches, and DEHPICK will let you choose which one to apply.
+
+**WARNING**: If you have a DOOMHACK.EXE, patches will be applied *on top of that* executable. If this is not the behavior you want, delete DOOMHACK.EXE before running DEHPICK. DEHPICK will not delete DOOMHACK.EXE for you.
 
 
-## License
+# License
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License

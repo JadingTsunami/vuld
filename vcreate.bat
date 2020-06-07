@@ -37,6 +37,8 @@ if exist doom.exe copy doom.exe doomhack.exe
 if exist doom2.exe copy doom2.exe doomhack.exe
 vuld -create
 if errorlevel 1 goto error
+echo.
+echo Do NOT distribute files created by the VCREATE command.
 goto exit
 
 :error

@@ -33,6 +33,8 @@ echo.
 del dehacked.ini
 
 :nodh
+if exist doom.exe copy doom.exe doomhack.exe
+if exist doom2.exe copy doom2.exe doomhack.exe
 vuld -create
 if errorlevel 1 goto error
 goto exit

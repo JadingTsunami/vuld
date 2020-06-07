@@ -41,6 +41,16 @@ Run `DEHPICK.EXE` in a folder containing your game files and a set of DeHackEd p
 
 **WARNING**: If you have a DOOMHACK.EXE, patches will be applied *on top of that* executable. If this is not the behavior you want, delete DOOMHACK.EXE before running DEHPICK. DEHPICK will not delete DOOMHACK.EXE for you.
 
+# Acknowledgements and Credits
+
+All company names, product names, trademarks and/or registered trademarks are property of their respective owners. All company, product and/or service names used on this page are for identification purposes only. Use of these names, trademarks and/or brands does not imply endorsement nor affiliation.
+
+[DeHackEd](https://www.doomworld.com/idgames/utils/exe_edit/dhe31) was created by Greg Lewis.
+
+[DeuTex, DeuSF and WinTex](http://www.gamers.org/addons/utils/deutex/)  are Copyright (c) O.Montanuy 1994,1995.
+
+DOOM and DOOM II are registered trademarks of ZeniMax Media Inc. in the US and/or other countries. Id Software® is a registered trademark of ZeniMax Media Inc. in the US and/or other countries. This software is in no way affiliated with ZeniMax Media Inc. or id Software LLC and is not approved by ZeniMax Media Inc. or id Software.
+
 
 # License
 

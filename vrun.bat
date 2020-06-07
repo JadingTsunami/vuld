@@ -22,7 +22,7 @@ del dehacked.ini
 
 :nodh
 vuld
-if not errorlevel 0 goto :error
+if errorlevel 1 goto :error
 
 if exist vuld_dir\vuldmod.exe goto checkwad
 if exist doom.exe copy doom.exe vuld_dir\vuldmod.exe

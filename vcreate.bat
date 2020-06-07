@@ -34,7 +34,7 @@ del dehacked.ini
 
 :nodh
 vuld -create
-if not errorlevel 0 goto error
+if errorlevel 1 goto error
 goto exit
 
 :error

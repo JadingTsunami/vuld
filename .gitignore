@@ -54,3 +54,5 @@ dkms.conf
 *.ccls-cache/
 *.ini
 todo.txt
+dehpick
+vuld

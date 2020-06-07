@@ -10,10 +10,10 @@ echo you will need to move or delete them yourself.
 echo.
 choice Is this OK?
 if errorlevel 2 goto safeexit
-echo.
 
 if not exist doomhack.exe goto nodhe
 
+echo.
 echo WARNING!!
 echo DoomHack.exe will be deleted.
 choice Is this OK?
@@ -24,6 +24,7 @@ del doomhack.exe
 :nodhe
 
 if not exist dehacked.ini goto nodh
+echo.
 echo WARNING!!
 echo DEHACKED.INI will be deleted.
 choice Is this OK?
@@ -33,11 +34,11 @@ del dehacked.ini
 
 :nodh
 vuld -create
-if not errorlevel 0 goto :error
-echo.
+if not errorlevel 0 goto error
 goto exit
 
 :error
+echo.
 echo ERROR occurred -- please check the program output above.
 goto exit
 

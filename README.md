@@ -26,6 +26,8 @@ Unzip the sources and run:
 * While in your main game folder, type `VRUN`, press enter, select the mod you want to play and it should compile and launch without modifying your game files.
     * **Warning:** If you have a doomhack.exe, back it up first or it will be overwritten!
     * If DeHackEd asks if you want to create a **doomhack.exe**, say "yes" to avoid overwriting data in your main game files.
+* If you want to re-run the most recent mod without rebuilding, use the `VRERUN` command.
+    * Note this requires you to have run with `VRUN` first.
 * If you want to use VULD to create files but not run them, leaving them available for later use, use the `VCREATE` command instead of VRUN above.
     * **Warning:** Files constructed by `VCREATE` are for **local use only** on your machine; do not distribute them.
     * Files will be placed in a subfolder called VULD_DIR and will be named according to the mod you loaded (example: files from the subdirectory ASTRO would be ASTRO.EXE if DeHackEd patches were loaded and/or ASTRO.WAD if WAD file patches were loaded).

@@ -27,6 +27,7 @@ Unzip the sources and run:
     * **Warning:** If you have a doomhack.exe, back it up first or it will be overwritten!
     * If DeHackEd asks if you want to create a **doomhack.exe**, say "yes" to avoid overwriting data in your main game files.
 * If you want to use VULD to create files but not run them, leaving them available for later use, use the `VCREATE` command instead of VRUN above.
+    * **Warning:** Files constructed by `VCREATE` are for **local use only** on your machine; do not distribute them.
     * Files will be placed in a subfolder called VULD_DIR and will be named according to the mod you loaded (example: files from the subdirectory ASTRO would be ASTRO.EXE if DeHackEd patches were loaded and/or ASTRO.WAD if WAD file patches were loaded).
     * The resulting files need to be run from your game directory and loaded with the `-file` command as with any standard PWAD. So if your mod is called `example`, you can run it immediately after `VCREATE` by navigating to your game directory and typing: `vuld_dir\example.exe -file vuld_dir\example.wad`.
 

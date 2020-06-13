@@ -72,9 +72,18 @@ bool merge_all_deh( struct file_list* deh_files, char* deh_cmd, char* outfile )
 
         cmd_len += strlen(fullpath) + 1;
         if( cmd_len >= MAX_LINESIZE ) {
-            fprintf(stderr, "Error: Could not fit the DeHackEd command on the command line.\n");
-            fprintf(stderr, "Try loading fewer patches.\n");
-            return false;
+            /* run the Dehacked command we have so far */
+            if( run_command(cmd) ) {
+                fprintf(stderr, "Error: Could not apply the DeHackEd patches.\n");
+                fprintf(stderr, "Check for DeHackEd errors.\n");
+                return false;
+            }
+
+            /* Start a new command, being careful to append cmd_len with
+             * the length of the current file */
+            snprintf( cmd, MAX_LINESIZE, "%s . -load ", deh_cmd );
+            cmd_len = strlen(cmd);
+            cmd_len += strlen(fullpath) + 1;
         }
 
         strcat( cmd, fullpath[0]?fullpath:deh_files->name );

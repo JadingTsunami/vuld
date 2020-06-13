@@ -105,7 +105,14 @@ int choose_number(char* prompt, int max_tries, int least, int most, bool print_r
         return -1;
 }
 
+
 struct file_list* choose_file( struct file_list* head, char* prompt, int max_files_per_screen )
+{
+    return choose_option( head, prompt, "Select a file: ", max_files_per_screen );
+}
+
+
+struct file_list* choose_option( struct file_list* head, char* prompt, char* select_prompt, int max_files_per_screen )
 {
     int pos = 0;
     int page = 0;
@@ -143,7 +150,7 @@ struct file_list* choose_file( struct file_list* head, char* prompt, int max_fil
 
         printf("\n");
 
-        chosen = choose_number( "Select a file: ", -1, (page>0?0:1), max_choice, true);
+        chosen = choose_number( select_prompt, -1, (page>0?0:1), max_choice, true);
 
         if( chosen == 0 ) {
             node = head;

@@ -46,7 +46,9 @@ DEHPICK is a simple utility to find and apply DeHackEd patches.
 
 Run `DEHPICK.EXE` in a folder containing your game files and a set of DeHackEd patches, and DEHPICK will let you choose which one to apply.
 
-**WARNING**: If you have a DOOMHACK.EXE, patches will be applied *on top of that* executable. If this is not the behavior you want, delete DOOMHACK.EXE before running DEHPICK. DEHPICK will not delete DOOMHACK.EXE for you.
+You can also optionally supply a folder as a command-line argument and DEHPICK will look for DeHackEd patches there, as well as store the patched executable in that folder.
+
+**WARNING**: If you have a DOOMHACK.EXE, patches can be applied *on top of that* executable. This will allow you to apply multiple patches by running DEHPICK more than once. Alternatively, DEHPICK will give you the option to start over. The "start over" option will **delete your DOOMHACK.EXE** and start with a clean game executable.
 
 # Acknowledgements and Credits
 

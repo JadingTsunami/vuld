@@ -37,11 +37,48 @@ int main(int argc, char** argv)
     deh_head->name = NULL;
     deh_head->next = NULL;
     struct file_list* chosen_deh = NULL;
+    int retval = 0;
 
-    find_files( ".", ".DEH", deh_head );
+    if( !does_file_exist("dehacked.exe") ) {
+        fprintf(stderr, "Error: No DeHackEd executable found.\n");
+        destroy( deh_head );
+        return 1;
+    }
 
-    if( argc >= 2 ) {
-        prompt = argv[1];
+    if( does_file_exist("doomhack.exe") ) {
+        struct file_list choice_clean;
+        struct file_list choice_acc;
+        char str_clean[] = "Start over anew (delete DOOMHACK.EXE).";
+        char str_acc[] = "Patch on top of the existing executable (keep DOOMHACK.EXE).";
+        choice_clean.name = str_clean;
+        choice_acc.name = str_acc;
+        choice_clean.next = &choice_acc;
+        if( &choice_clean == choose_option(&choice_clean,"NOTICE: Found a DeHackEd patched DOOMHACK.EXE.\n\nDo you want to patch on top of this executable or start over?\nIf you don't know what this is, choose \"start over\".\n","Select an option: ",5) ) {
+            if( remove( "doomhack.exe" ) != 0 ) {
+                fprintf(stderr, "Error: Couldn't remove DOOMHACK.EXE.\n");
+                fprintf(stderr, "Please remove the file manually and re-run.\n");
+                destroy(deh_head);
+                return 1;
+            } else if( (does_file_exist("doom.exe") && !run_command("copy doom.exe doomhack.exe")) ||
+                    (does_file_exist("doom2.exe") && !run_command("copy doom2.exe doomhack.exe") ) ) {
+                /* ordinarily, this would be an error, but
+                 * since DeHackEd will handle this, we can 
+                 * just print it and continue
+                 */
+                fprintf(stderr, "Warning: Couldn't create a new DOOMHACK.EXE.\n");
+                fprintf(stderr, "Will let DeHackEd handle it.\n");
+                fprintf(stderr, "Logging and moving on...\n");
+            }
+        } else {
+            printf("Patching on top of existing DOOMHACK.EXE.\n");
+        }
+        
+    }
+
+    if( argc > 1 ) {
+        find_files( argv[1], ".DEH", deh_head );
+    } else {
+        find_files( ".", ".DEH", deh_head );
     }
 
     /* if only 1 deh, use it */
@@ -53,7 +90,7 @@ int main(int argc, char** argv)
     }
 
     if(!deh_head->name) {
-        printf("Error: No DeHackEd files found.\n");
+        fprintf(stderr, "Error: No DeHackEd files found.\n");
     } else {
         char cmd[MAX_LINESIZE];
         char fullpath[MAX_PATH+1];
@@ -74,7 +111,12 @@ int main(int argc, char** argv)
 
         snprintf( cmd, MAX_LINESIZE, "dehacked . -load %s\n", fullpath[0]?fullpath:chosen_deh->name );
 
-        run_command(cmd);
+        if( run_command(cmd) ) {
+            fprintf(stderr, "Error: Could not apply the DeHackEd patches.\n");
+            fprintf(stderr, "Check for DeHackEd errors.\n");
+            destroy( deh_head );
+            return 1;
+        }
 
         tmp = strdup( chosen_deh->name );
 
@@ -84,9 +126,14 @@ int main(int argc, char** argv)
 
         snprintf( cmd, MAX_LINESIZE, "copy DOOMHACK.EXE %s.EXE\n", tmp);
 
-        run_command(cmd);
-
-        printf("\n\n%s has been merged into %s.EXE\n", chosen_deh->name,tmp);
+        if ( run_command(cmd) ) {
+            fprintf(stderr,"\n\nError: Could not merge changes into %s.EXE\n", tmp);
+            fprintf(stderr, "Check for DeHackEd or disk errors.\n");
+            retval = 1;
+        } else { 
+            printf("\n\n%s has been merged into %s.EXE\n", chosen_deh->name,tmp);
+            printf("\n");
+        }
 
         if (tmp)
             free(tmp);
@@ -94,5 +141,5 @@ int main(int argc, char** argv)
     }
 
     destroy(deh_head);
-    return 0;
+    return retval;
 }

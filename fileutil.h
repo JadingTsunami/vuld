@@ -41,6 +41,7 @@ void add_file( struct file_list* head, char* name );
 void destroy( struct file_list* head );
 int choose_number(char* prompt, int max_tries, int least, int most, bool print_range);
 struct file_list* choose_file( struct file_list* head, char* prompt, int max_files_per_screen );
+struct file_list* choose_option( struct file_list* head, char* prompt, char* select_prompt, int max_files_per_screen );
 int run_command(char* cmd);
 int find_files( char* fdir, char* fextension, struct file_list* fhead );
 void clear_screen();

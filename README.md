@@ -2,7 +2,9 @@
 
 ## Compilation
 
-Compiled with [DJGPP](http://www.delorie.com/djgpp/).
+Acquire the [latest source](https://github.com/JadingTsunami/vuld).
+
+Compiles with [DJGPP](http://www.delorie.com/djgpp/).
 
 Unzip the sources and run:
 

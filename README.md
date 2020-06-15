@@ -54,6 +54,10 @@ You can also optionally supply a folder as a command-line argument and DEHPICK w
 
 All company names, product names, trademarks and/or registered trademarks are property of their respective owners. All company, product and/or service names used on this page are for identification purposes only. Use of these names, trademarks and/or brands does not imply endorsement nor affiliation.
 
+Big thanks to Redneckerz for testing and providing valuable and detailed feedback during development.
+
+Thanks to Doomkid for inspiring the creation of [DEHPick](https://www.doomworld.com/forum/topic/114759-creating-an-auto-dehacker-for-vanilla/?page=2&tab=comments#comment-2138488).
+
 [DeHackEd](https://www.doomworld.com/idgames/utils/exe_edit/dhe31) was created by Greg Lewis.
 
 [DeuTex, DeuSF and WinTex](http://www.gamers.org/addons/utils/deutex/)  are Copyright (c) O.Montanuy 1994,1995.
